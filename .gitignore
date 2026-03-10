@@ -1,0 +1,8 @@
+.env
+.env.local
+.codex/
+__pycache__/
+*.py[cod]
+server/sessions.db
+client/dist/
+node_modules/
