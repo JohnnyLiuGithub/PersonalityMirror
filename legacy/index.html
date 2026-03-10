@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="人格镜子 - 一面不讨好你的镜子">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personality Mirror</title>
+    <!-- Tailwind CSS (via CDN for simplicity) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: "#09090b",
+                        surface: "#18181b",
+                        primary: "#a855f7",
+                        secondary: "#ec4899",
+                        accent: "#06b6d4",
+                        text: "#e4e4e7",
+                        muted: "#71717a",
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <!-- Vue 3 (via CDN) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/3.3.4/vue.global.min.js"></script>
+    <!-- Icons -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.292.0/umd/lucide.min.js"></script>
+    <style>
+        [v-cloak] { display: none !important; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .fade-enter-active, .fade-leave-active { transition: opacity 0.5s ease; }
+        .fade-enter-from, .fade-leave-to { opacity: 0; }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #18181b; }
+        ::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #52525b; }
+    </style>
+</head>
+<body class="bg-background text-text min-h-screen flex flex-col items-center justify-center overflow-x-hidden selection:bg-primary selection:text-white">
+
+    <div id="app" v-cloak class="w-full max-w-4xl px-4 py-8 relative z-10">
+        <!-- Background Effects -->
+        <div class="fixed top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none"></div>
+        <div class="fixed bottom-0 right-1/4 w-96 h-96 bg-secondary/10 rounded-full blur-[120px] -z-10 animate-pulse pointer-events-none delay-1000"></div>
+
+        <!-- Header -->
+        <header v-if="view !== 'landing'" class="fixed top-0 left-0 right-0 p-4 flex justify-between items-center bg-background/80 backdrop-blur-md z-50 border-b border-white/5">
+            <div class="flex items-center space-x-2 cursor-pointer" @click="confirmRestart">
+                <div class="w-2 h-8 bg-gradient-to-b from-primary to-secondary rounded-full"></div>
+                <span class="font-bold tracking-tight text-lg">人格镜子</span>
+            </div>
+            <div v-if="view === 'question'" class="text-xs font-mono text-muted">
+                问题 {{ currentQuestionIndex + 1 }} / {{ questions.length }}
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="mt-16 md:mt-0 min-h-[60vh] flex flex-col justify-center">
+            
+            <!-- VIEW: LANDING -->
+            <transition name="fade" mode="out-in">
+                <div v-if="view === 'landing'" key="landing" class="text-center space-y-8">
+                    <div class="space-y-4">
+                        <h1 class="text-5xl md:text-7xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-white to-secondary pb-2">
+                            人格镜子
+                        </h1>
+                        <p class="text-xl md:text-2xl text-muted font-light max-w-lg mx-auto leading-relaxed">
+                            一面不讨好你的镜子。
+                            <br />
+                            <span class="text-sm opacity-60 font-mono mt-2 block">10个问题，照出你一直不敢承认的自己。</span>
+                        </p>
+                    </div>
+
+                    <button 
+                        @click="startSession" 
+                        :disabled="isLoading"
+                        class="group relative flex justify-center items-center px-10 py-5 bg-surface border border-white/10 rounded-full hover:border-primary/50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.5)] mx-auto"
+                    >
+                        <div class="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <span class="relative flex items-center space-x-3 font-medium tracking-wide text-lg">
+                            <span v-if="isLoading">正在生成问题...</span>
+                            <span v-else>开始照镜子</span>
+                            <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                        </span>
+                    </button>
+                    
+                    <div class="text-xs text-muted/40 mt-12 font-mono">
+                        v1.0.1 • 无需登录 • 数据本地存储
+                    </div>
+                </div>
+
+                <!-- VIEW: QUESTION -->
+                <div v-else-if="view === 'question'" key="question" class="w-full max-w-2xl mx-auto space-y-8">
+                    <!-- Progress Bar -->
+                    <div class="w-full h-1 bg-surface rounded-full overflow-hidden mb-8">
+                        <div class="h-full bg-gradient-to-r from-primary to-secondary transition-all duration-500 ease-out" :style="{ width: progress + '%' }"></div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div class="space-y-2">
+                            <span class="text-xs font-mono text-primary uppercase tracking-wider bg-primary/10 px-2 py-1 rounded">
+                                {{ currentQuestion.type.toUpperCase() }}
+                            </span>
+                            <h2 class="text-2xl md:text-3xl font-bold leading-tight">
+                                {{ currentQuestion.question_text }}
+                            </h2>
+                            <p v-if="false" class="text-muted italic border-l-2 border-primary/30 pl-4 py-2 text-lg font-light">
+                                "{{ currentQuestion.scenario }}"
+                            </p>
+                        </div>
+
+                        <!-- MCQ Options -->
+                        <div v-if="currentQuestion.type === 'mcq'" class="grid grid-cols-1 gap-3">
+                            <button 
+                                v-for="(option, idx) in currentQuestion.options" 
+                                :key="idx"
+                                @click="selectOption(String.fromCharCode(65 + idx))"
+                                class="group flex items-center p-5 rounded-xl border transition-all duration-200 text-left relative overflow-hidden"
+                                :class="localAnswer === String.fromCharCode(65 + idx) ? 'border-primary bg-primary/10 text-white shadow-[0_0_15px_rgba(168,85,247,0.2)]' : 'border-white/5 bg-surface hover:bg-white/5 hover:border-white/10'"
+                            >
+                                <span class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold mr-4 transition-colors shrink-0"
+                                    :class="localAnswer === String.fromCharCode(65 + idx) ? 'bg-primary text-white' : 'bg-white/10 text-muted group-hover:bg-white/20'">
+                                    {{ String.fromCharCode(65 + idx) }}
+                                </span>
+                                <span class="flex-1 text-lg">{{ option }}</span>
+                            </button>
+                        </div>
+
+                        <!-- Rank Options -->
+                        <div v-if="currentQuestion.type === 'rank'" class="space-y-6">
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted uppercase">你的排序 (点击移除)</label>
+                                <div class="flex flex-col gap-2 min-h-[120px] p-4 bg-surface/50 rounded-xl border border-white/5 border-dashed transition-all" :class="{'border-primary/30 bg-primary/5': localAnswer && localAnswer.length > 0}">
+                                    <div v-if="!localAnswer || localAnswer.length === 0" class="text-center text-muted/50 py-8 text-sm italic">
+                                        点击下方选项进行排序
+                                    </div>
+                                    <div v-else-if="localAnswer.length < 4" class="text-center text-primary/80 py-2 text-sm font-bold animate-pulse">
+                                        还差 {{ 4 - localAnswer.length }} 项
+                                    </div>
+                                    <transition-group name="list" tag="div" class="flex flex-col gap-2">
+                                        <button 
+                                            v-for="(item, idx) in localAnswer" 
+                                            :key="item"
+                                            @click="deselectRankItem(item)"
+                                            class="flex items-center p-3 bg-primary/20 border border-primary/30 rounded-lg text-left group hover:bg-red-500/20 hover:border-red-500/30 transition-all animate-in slide-in-from-bottom-2"
+                                        >
+                                            <span class="w-6 h-6 flex items-center justify-center bg-primary text-white rounded-full text-xs font-bold mr-3 group-hover:bg-red-500 transition-colors">
+                                                {{ idx + 1 }}
+                                            </span>
+                                            <span class="flex-1 font-medium">{{ item }}</span>
+                                            <i data-lucide="x" class="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-red-400"></i>
+                                        </button>
+                                    </transition-group>
+                                </div>
+                            </div>
+
+                            <div class="space-y-2">
+                                <label class="text-sm font-medium text-muted uppercase">选项 (点击添加)</label>
+                                <div class="grid grid-cols-1 gap-2">
+                                    <button 
+                                        v-for="item in getRemainingRankItems()" 
+                                        :key="item"
+                                        @click="selectRankItem(item)"
+                                        class="flex items-center p-4 bg-surface border border-white/5 rounded-lg text-left hover:bg-white/5 hover:border-white/10 transition-colors active:scale-[0.99]"
+                                    >
+                                        <div class="w-6 h-6 rounded-full border border-white/20 mr-3 flex items-center justify-center">
+                                            <div class="w-2 h-2 rounded-full bg-white opacity-0"></div>
+                                        </div>
+                                        <span class="text-muted/80 text-lg">{{ item }}</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Short Answer -->
+                        <div v-if="currentQuestion.type === 'short'" class="space-y-4">
+                            <textarea 
+                                v-model="localAnswer" 
+                                placeholder="在此输入你的回答..." 
+                                class="w-full min-h-[200px] bg-surface border border-white/10 rounded-xl p-6 text-lg focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all resize-none placeholder:text-muted/30"
+                            ></textarea>
+                            <p v-if="currentQuestion.answer_hint" class="text-sm text-primary/70 text-right italic">
+                                提示：{{ currentQuestion.answer_hint }} （至少10个字）
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="flex justify-end pt-8">
+                        <button 
+                            @click="nextQuestion" 
+                            :disabled="!isAnswerValid"
+                            class="flex items-center space-x-2 px-8 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95"
+                        >
+                            <span>{{ currentQuestionIndex === questions.length - 1 ? '完成' : '下一题' }}</span>
+                            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VIEW: LOADING -->
+                <div v-else-if="view === 'loading'" key="loading" class="flex flex-col items-center justify-center space-y-8 text-center min-h-[60vh]">
+                    <div class="relative w-32 h-32">
+                        <!-- Outer Ring -->
+                        <div class="absolute inset-0 border-4 border-primary/20 rounded-full"></div>
+                        <!-- Spinning Ring -->
+                        <div class="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                        <!-- Inner Pulse -->
+                        <div class="absolute inset-8 bg-primary/10 rounded-full animate-pulse"></div>
+                    </div>
+                    
+                    <div class="space-y-4 max-w-md mx-auto">
+                        <h2 class="text-2xl font-light tracking-wide animate-pulse">
+                            {{ loadingMessage || '正在解析...' }}
+                        </h2>
+                        
+                        <!-- Steps Indicator -->
+                        <div class="flex justify-center space-x-2 pt-4">
+                            <div class="h-1 w-8 rounded-full transition-colors duration-500" :class="['scoring', 'analysis', 'card'].includes(loadingStep) ? 'bg-primary' : 'bg-surface border border-white/10'"></div>
+                            <div class="h-1 w-8 rounded-full transition-colors duration-500" :class="['analysis', 'card'].includes(loadingStep) ? 'bg-primary' : 'bg-surface border border-white/10'"></div>
+                            <div class="h-1 w-8 rounded-full transition-colors duration-500" :class="loadingStep === 'card' ? 'bg-primary' : 'bg-surface border border-white/10'"></div>
+                        </div>
+                        
+                        <p class="text-sm text-muted font-mono pt-2 opacity-70">
+                            <span v-if="loadingStep === 'scoring'">分析答题数据...</span>
+                            <span v-if="loadingStep === 'analysis'">连接 AI 大脑... 这可能需要一点时间</span>
+                            <span v-if="loadingStep === 'card'">绘制人格画像...</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- VIEW: REPORT -->
+                <div v-else-if="view === 'report'" key="report" class="w-full max-w-4xl mx-auto space-y-16 pb-20">
+                    <!-- Header Section -->
+                    <div class="text-center space-y-6 animate-in slide-in-from-bottom-8 duration-700">
+                        <span class="text-xs font-mono text-primary uppercase tracking-[0.3em]">你的人格镜像</span>
+                        <h1 class="text-4xl md:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60 leading-tight">
+                            {{ report.headline }}
+                        </h1>
+                        <p class="text-xl md:text-2xl text-muted font-light max-w-3xl mx-auto italic border-l-4 border-primary/50 pl-6 py-2 bg-surface/30 rounded-r-xl">
+                            "{{ report.brutal_summary }}"
+                        </p>
+                    </div>
+
+                    <!-- Core Analysis Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+                        <report-section title="表层人格" :content="report.surface_persona" :delay="100"></report-section>
+                        <report-section v-if="report.shadow_analysis" title="影子人格" :content="report.shadow_analysis" :delay="150" :shadow="true"></report-section>
+                        <report-section title="深层驱动" :content="report.core_drives" :delay="200"></report-section>
+                        <report-section title="防御机制" :content="report.defense_mechanisms" :is-list="true" :delay="300"></report-section>
+                        <report-section title="关系模式" :content="report.relationship_pattern" :delay="400"></report-section>
+                    </div>
+
+                    <!-- Deep Dive -->
+                    <div class="space-y-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div @click="reportFolded = !reportFolded" class="md:col-span-2 text-center py-2 cursor-pointer text-muted hover:text-white transition-colors flex items-center justify-center space-x-2">
+                                <span>{{ reportFolded ? '展开更多深度分析' : '收起深度分析' }}</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="{'rotate-180': !reportFolded}"></i>
+                            </div>
+                            
+                            <template v-if="!reportFolded">
+                                <report-section title="人生模式" :content="report.life_pattern" :full-width="true" :delay="500"></report-section>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 md:col-span-2">
+                                    <report-section title="风险提醒" :content="report.risks" :is-list="true" :warning="true" :delay="600"></report-section>
+                                    <report-section title="成长建议" :content="report.growth_advice" :is-list="true" :success="true" :delay="700"></report-section>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- Personality Card Preview -->
+                    <div class="flex flex-col items-center justify-center pt-16 border-t border-white/5 space-y-8">
+                        <h3 class="text-xl font-bold text-center">你的专属人格卡片</h3>
+                        
+                        <div class="relative group transform hover:scale-[1.02] transition-transform duration-500">
+                            <div class="w-[320px] h-[568px] bg-surface border border-white/10 rounded-3xl overflow-hidden flex flex-col relative shadow-2xl shadow-black/50 select-none">
+                                <!-- Background Gradient -->
+                                <div class="absolute inset-0 bg-gradient-to-br from-primary/20 via-background to-secondary/20 opacity-50"></div>
+                                
+                                <!-- Content -->
+                                <div class="relative z-10 flex flex-col h-full p-8 text-center space-y-6">
+                                    <div class="space-y-2 pt-4">
+                                        <div class="w-12 h-1 bg-gradient-to-r from-primary to-secondary mx-auto rounded-full"></div>
+                                        <h3 class="text-[10px] font-mono text-muted uppercase tracking-[0.3em]">Personality Mirror</h3>
+                                    </div>
+
+                                    <div class="flex-1 flex flex-col items-center justify-center space-y-6">
+                                        <div class="text-center">
+                                            <div class="text-[10px] text-muted uppercase tracking-widest mb-1">主人格</div>
+                                            <h1 class="text-3xl font-bold text-white leading-tight">
+                                                {{ report.card_label }}
+                                            </h1>
+                                        </div>
+                                        
+                                        <div v-if="report.card_shadow_label" class="text-center border-t border-white/10 pt-4 w-full">
+                                            <div class="text-[10px] text-muted uppercase tracking-widest mb-1">影子人格</div>
+                                            <h2 class="text-xl font-medium text-white/80">
+                                                {{ report.card_shadow_label }}
+                                            </h2>
+                                        </div>
+
+                                        <div class="flex flex-wrap justify-center gap-2 pt-2">
+                                            <span v-for="(trait, i) in report.card_traits.slice(0, 3)" :key="i" class="px-3 py-1 bg-white/5 border border-white/10 rounded-full text-[10px] text-primary/80 font-medium tracking-wide uppercase">
+                                                {{ trait }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <div class="space-y-6 pb-8">
+                                        <p class="text-base font-light italic text-white/80 leading-relaxed px-2">
+                                            "{{ report.card_insight }}"
+                                        </p>
+                                        
+                                        <div class="pt-6 border-t border-white/5 flex justify-between items-end">
+                                            <div class="text-left space-y-1">
+                                                <div class="text-[8px] text-muted uppercase tracking-widest">Mirror ID</div>
+                                                <div class="text-[10px] font-mono text-white/50">{{ mirrorId }}</div>
+                                            </div>
+                                            <div class="text-right">
+                                                <div class="text-[8px] text-muted uppercase tracking-widest mb-1">开始照镜子</div>
+                                                <div class="text-[10px] font-mono text-primary">personalitymirror.ai</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex space-x-4">
+                            <button @click="view = 'landing'" class="text-sm text-muted hover:text-white flex items-center space-x-2 transition-colors px-6 py-3 rounded-full hover:bg-white/5">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                <span>重新开始</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </transition>
+        </main>
+    </div>
+
+    <!-- Logic -->
+    <script type="module" src="./app.js"></script>
+</body>
+</html>
