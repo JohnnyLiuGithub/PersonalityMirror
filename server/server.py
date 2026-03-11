@@ -141,6 +141,54 @@ def _db_fetchall(sql, params=()):
         return DB_CONN.execute(sql, params).fetchall()
 
 
+def _db_scalar(sql, params=()):
+    row = _db_fetchone(sql, params)
+    if row is None:
+        return None
+    if isinstance(row, sqlite3.Row):
+        return row[0]
+    return row[0]
+
+
+def _db_table_exists(table_name):
+    return (
+        _db_scalar(
+            "SELECT name FROM sqlite_master WHERE type = 'table' AND name = ?",
+            (table_name,),
+        )
+        is not None
+    )
+
+
+def build_health_payload():
+    table_names = [
+        'sessions',
+        'users',
+        'auth_tokens',
+        'test_records',
+        'match_reports',
+        'question_variants',
+    ]
+    table_counts = {}
+    for table_name in table_names:
+        if _db_table_exists(table_name):
+            table_counts[table_name] = int(_db_scalar(f'SELECT COUNT(*) FROM {table_name}') or 0)
+        else:
+            table_counts[table_name] = None
+
+    db_size_bytes = os.path.getsize(DB_PATH) if os.path.exists(DB_PATH) else 0
+    return {
+        'ok': True,
+        'backend_version': BACKEND_VERSION,
+        'model': MODEL,
+        'debug': DEBUG_MODE,
+        'db_path': DB_PATH,
+        'db_size_bytes': db_size_bytes,
+        'table_counts': table_counts,
+        'question_variant_target': QUESTION_VARIANT_TARGET,
+    }
+
+
 def _ensure_column(table_name, column_name, definition):
     columns = _db_fetchall(f'PRAGMA table_info({table_name})')
     if any(column['name'] == column_name for column in columns):
@@ -2004,6 +2052,9 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
             },
         )
 
+    def _handle_health(self):
+        self._send_json(200, build_health_payload())
+
     def _handle_model_ping(self):
         started = time.time()
         try:
@@ -2041,6 +2092,9 @@ class CustomHandler(http.server.SimpleHTTPRequestHandler):
 
         if path == '/api/version':
             self._handle_version()
+            return
+        if path == '/api/health':
+            self._handle_health()
             return
         if path == '/api/model-ping':
             self._handle_model_ping()
