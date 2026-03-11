@@ -1,4 +1,4 @@
-export const PERSONALITY_TYPES = {
+﻿export const PERSONALITY_TYPES = {
   CONTROL: [
     {
       id: 'hidden_controller',
@@ -10,13 +10,13 @@ export const PERSONALITY_TYPES = {
       id: 'order_guardian',
       name: '秩序守护者',
       traits: ['规则感', '谨慎', '边界清晰'],
-      insight: '你相信规则能带来安全，但过度依赖规则会削弱关系弹性。'
+      insight: '你相信秩序能带来安全，但过度依赖秩序会让关系变得僵硬。'
     },
     {
       id: 'performance_driver',
       name: '表现驱动者',
       traits: ['成就导向', '竞争', '高标准'],
-      insight: '你用结果证明价值，容易把被爱误解成必须赢。'
+      insight: '你用结果证明价值，久而久之会把被认可误当成被爱。'
     }
   ],
   OBSERVATION: [
@@ -24,13 +24,13 @@ export const PERSONALITY_TYPES = {
       id: 'rational_defender',
       name: '理性防御者',
       traits: ['逻辑', '克制', '审视'],
-      insight: '你习惯先分析再行动，安全感来自看清结构。'
+      insight: '你习惯先分析再行动，安全感来自把局面看清楚。'
     },
     {
       id: 'emotion_observer',
       name: '情绪观察者',
       traits: ['敏感', '细腻', '旁观倾向'],
-      insight: '你能捕捉情绪细节，但也容易停留在观察层。'
+      insight: '你能捕捉情绪细节，但也容易停留在观察层，不轻易卷入。'
     },
     {
       id: 'loner_thinker',
@@ -56,7 +56,7 @@ export const PERSONALITY_TYPES = {
       id: 'empathy_supporter',
       name: '共情支持者',
       traits: ['温柔', '付出', '体贴'],
-      insight: '你习惯先照顾别人，久了会忽略自己的真实需要。'
+      insight: '你总先照顾别人，久了会忽略自己真正需要什么。'
     },
     {
       id: 'silent_lover',
@@ -101,7 +101,7 @@ export const PERSONALITY_TYPES = {
     {
       id: 'invisible_bearer',
       name: '隐形承担者',
-      traits: ['责任感', '沉默承压', '不求助'],
+      traits: ['责任感', '沉默扛压', '不求助'],
       insight: '你习惯自己扛住一切，久了会把疲惫变成常态。'
     }
   ],
@@ -110,19 +110,19 @@ export const PERSONALITY_TYPES = {
       id: 'self_explorer',
       name: '自我探索者',
       traits: ['成长动机', '反思', '求索'],
-      insight: '你在不断更新自己，但也要允许阶段性的不确定。'
+      insight: '你不断更新自己，但也要允许阶段性的模糊和迟疑。'
     },
     {
       id: 'self_healer',
       name: '自我修复者',
       traits: ['韧性', '自愈', '重建能力'],
-      insight: '你能从挫折中恢复，但恢复不等于不再受伤。'
+      insight: '你能从挫折里慢慢复原，但恢复不等于没有留下伤口。'
     },
     {
       id: 'meaning_seeker',
       name: '意义追寻者',
       traits: ['理想', '价值感', '长期主义'],
-      insight: '你需要意义感驱动行动，但别让完美意义阻碍真实开始。'
+      insight: '你需要意义感驱动行动，但别让完美意义阻挡真实开始。'
     }
   ],
   COMPLEX: [
@@ -135,8 +135,8 @@ export const PERSONALITY_TYPES = {
     {
       id: 'deep_introspector',
       name: '深度自省者',
-      traits: ['反思', '清醒', '自我批判'],
-      insight: '你看得很深，但过度自省会让行动被延迟。'
+      traits: ['反思', '清醒', '自我审视'],
+      insight: '你看得很深，但过度自省会让行动一再延后。'
     }
   ]
 };
@@ -249,7 +249,7 @@ export const BLUEPRINT = [
     type: 'short',
     dimension_primary: 'self_value',
     scenario: '用三个词描述你自己。',
-    question_text: '请尽量真实，而不是理想中的自己。',
+    question_text: '请尽量真实，而不是“理想中的自己”。',
     answer_hint: '想到什么先写什么。'
   },
   {

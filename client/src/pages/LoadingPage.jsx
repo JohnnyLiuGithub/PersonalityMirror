@@ -1,11 +1,7 @@
-import { motion } from 'framer-motion';
-
-const LoadingPage = ({ loadingMessage, loadingStep, waitSeconds }) => {
+﻿const LoadingPage = ({ loadingMessage, loadingStep, waitSeconds }) => {
   return (
-    <motion.div
+    <div
       key="loading"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
       className="flex flex-col items-center justify-center space-y-8 text-center min-h-[60vh]"
     >
       <div className="relative w-32 h-32">
@@ -16,10 +12,10 @@ const LoadingPage = ({ loadingMessage, loadingStep, waitSeconds }) => {
 
       <div className="space-y-4 max-w-md mx-auto">
         <h2 className="text-2xl font-light tracking-wide animate-pulse text-white">
-          {loadingMessage || 'Analyzing...'}
+          {loadingMessage || '正在分析中...'}
         </h2>
 
-        <p className="text-xs text-[#a1a1aa] font-mono">{`Waited ${waitSeconds}s`}</p>
+        <p className="text-xs text-[#a1a1aa] font-mono">{`已等待 ${waitSeconds}s`}</p>
 
         <div className="flex justify-center space-x-2 pt-4">
           <div className={`h-1 w-8 rounded-full transition-colors duration-500 ${['scoring', 'analysis', 'card'].includes(loadingStep) ? 'bg-[#a855f7]' : 'bg-[#18181b] border border-white/10'}`}></div>
@@ -28,12 +24,12 @@ const LoadingPage = ({ loadingMessage, loadingStep, waitSeconds }) => {
         </div>
 
         <p className="text-sm text-[#71717a] font-mono pt-2 opacity-70">
-          {loadingStep === 'scoring' && <span>Scoring your answer profile...</span>}
-          {loadingStep === 'analysis' && <span>Generating AI analysis... this may take a while.</span>}
-          {loadingStep === 'card' && <span>Preparing share card...</span>}
+          {loadingStep === 'scoring' && <span>正在计算六维得分...</span>}
+          {loadingStep === 'analysis' && <span>正在生成 AI 解析，这一步可能会稍慢。</span>}
+          {loadingStep === 'card' && <span>正在准备分享卡片...</span>}
         </p>
       </div>
-    </motion.div>
+    </div>
   );
 };
 

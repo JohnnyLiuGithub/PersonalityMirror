@@ -1,0 +1,236 @@
+[
+  {
+    "id": "q1",
+    "type": "mcq",
+    "dimension_primary": "attachment",
+    "scenario": "伴侣情绪低落，却不愿告诉你原因。",
+    "question_text": "你更可能怎么做？",
+    "options": [
+      "继续追问，希望尽快弄清楚",
+      "给对方一些空间再观察",
+      "担心是不是自己做错了什么",
+      "尽量把注意力转移开"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q2",
+    "type": "mcq",
+    "dimension_primary": "control",
+    "scenario": "团队项目进度明显落后。",
+    "question_text": "你的第一反应更接近：",
+    "options": [
+      "直接接管并重新安排",
+      "提醒大家并跟进进度",
+      "先看看别人会不会处理",
+      "只做好自己的部分"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q3",
+    "type": "mcq",
+    "dimension_primary": "self_value",
+    "scenario": "你的工作被公开表扬。",
+    "question_text": "你的真实感受更接近：",
+    "options": [
+      "感到被认可和自豪",
+      "开心但有点不自在",
+      "会怀疑对方是否客套",
+      "这不会改变我对自己的评价"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q4",
+    "type": "mcq",
+    "dimension_primary": "conflict",
+    "scenario": "朋友临时取消与你的约定。",
+    "question_text": "你更可能：",
+    "options": [
+      "直接表达不满",
+      "问清楚发生了什么",
+      "表面说没事但心里记着",
+      "暂时疏远一阵"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q5",
+    "type": "mcq",
+    "dimension_primary": "action",
+    "scenario": "你突然想到一个想尝试的新项目。",
+    "question_text": "你通常会：",
+    "options": [
+      "立刻开始做一个简单版本",
+      "先写计划再行动",
+      "先和别人聊聊想法",
+      "想很多但迟迟不动"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q6",
+    "type": "mcq",
+    "dimension_primary": "desire",
+    "scenario": "你很想买一件价格偏高的东西。",
+    "question_text": "你更可能：",
+    "options": [
+      "直接买下",
+      "等预算合适再买",
+      "觉得不该花这笔钱",
+      "看很多次但最后放弃"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q7",
+    "type": "mcq",
+    "dimension_primary": "reflection",
+    "scenario": "你刚经历一次明显的失败。",
+    "question_text": "你更可能先做什么？",
+    "options": [
+      "复盘到底哪里出了问题",
+      "和信任的人聊聊",
+      "先放下不再多想",
+      "尽快投入下一件事"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q8",
+    "type": "mcq",
+    "dimension_primary": "attachment",
+    "scenario": "关系中出现明显距离感。",
+    "question_text": "你更容易：",
+    "options": [
+      "主动拉近关系",
+      "试探对方态度",
+      "开始怀疑自己",
+      "逐渐退回自己的空间"
+    ],
+    "scoring_key": {
+      "A": 2,
+      "B": 1,
+      "C": -1,
+      "D": -2
+    }
+  },
+  {
+    "id": "q9",
+    "type": "rank",
+    "dimension_primary": "control",
+    "scenario": "你在带一个小团队推进任务。",
+    "question_text": "以下哪件事更重要？（从高到低）",
+    "rank_items": [
+      "效率",
+      "秩序",
+      "稳定",
+      "自由"
+    ],
+    "rank_map": {
+      "效率": {
+        "control": 1
+      },
+      "秩序": {
+        "control": 1
+      },
+      "稳定": {
+        "control": -1
+      },
+      "自由": {
+        "control": -1
+      }
+    },
+    "scoring_key": {
+      "1": 3,
+      "2": 1,
+      "3": -1,
+      "4": -3
+    }
+  },
+  {
+    "id": "q10",
+    "type": "rank",
+    "dimension_primary": "action",
+    "scenario": "你在规划一次假期。",
+    "question_text": "以下哪件事更吸引你？（从高到低）",
+    "rank_items": [
+      "冒险",
+      "体验",
+      "放松",
+      "安全"
+    ],
+    "rank_map": {
+      "冒险": {
+        "action": 1
+      },
+      "体验": {
+        "action": 1
+      },
+      "放松": {
+        "action": -1
+      },
+      "安全": {
+        "attachment": 1
+      }
+    },
+    "scoring_key": {
+      "1": 3,
+      "2": 1,
+      "3": -1,
+      "4": -3
+    }
+  },
+  {
+    "id": "q11",
+    "type": "short",
+    "dimension_primary": "self_value",
+    "scenario": "用三个词描述你自己。",
+    "question_text": "请尽量真实，而不是“理想中的自己”。",
+    "answer_hint": "想到什么先写什么。"
+  },
+  {
+    "id": "q12",
+    "type": "short",
+    "dimension_primary": "conflict",
+    "scenario": "在亲密关系里，你最害怕发生什么？",
+    "question_text": "写下你通常不会直接说出口的担心。",
+    "answer_hint": "例如被忽视、被误解、失去自我等。"
+  }
+]

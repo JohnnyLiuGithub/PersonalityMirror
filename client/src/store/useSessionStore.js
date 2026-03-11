@@ -145,6 +145,121 @@ const sanitizeLocalAnswer = (question, localAnswer, savedAnswer) => {
   return null;
 };
 
+const sanitizeUser = (value) => {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  const userId = Number(value.user_id);
+  const username = typeof value.username === 'string' ? value.username.trim() : '';
+  if (!Number.isFinite(userId) || !username) {
+    return null;
+  }
+
+  return {
+    user_id: userId,
+    username,
+    created_at: Number(value.created_at) || null
+  };
+};
+
+const sanitizeRecordSummary = (value) => {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  const recordId = typeof value.record_id === 'string' ? value.record_id.trim() : '';
+  if (!recordId) {
+    return null;
+  }
+
+  return {
+    record_id: recordId,
+    created_at: Number(value.created_at) || 0,
+    updated_at: Number(value.updated_at) || 0,
+    headline: typeof value.headline === 'string' ? value.headline.trim() : '',
+    brutal_summary: typeof value.brutal_summary === 'string' ? value.brutal_summary.trim() : '',
+    main_label: typeof value.main_label === 'string' ? value.main_label.trim() : '',
+    shadow_label: typeof value.shadow_label === 'string' ? value.shadow_label.trim() : '',
+    is_match_enabled: Boolean(value.is_match_enabled)
+  };
+};
+
+const sanitizeStats = (value, keys) => {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  const next = {};
+  for (const key of keys) {
+    next[key] = Math.max(0, Number(value[key]) || 0);
+  }
+  return next;
+};
+
+const sanitizeMatchProfile = (value) => {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  return {
+    headline: typeof value.headline === 'string' ? value.headline.trim() : '',
+    main_label: typeof value.main_label === 'string' ? value.main_label.trim() : '',
+    shadow_label: typeof value.shadow_label === 'string' ? value.shadow_label.trim() : ''
+  };
+};
+
+const sanitizeMatch = (value) => {
+  if (!isObject(value)) {
+    return null;
+  }
+
+  return {
+    match_id: typeof value.match_id === 'string' ? value.match_id : '',
+    compatibility_score: Number(value.compatibility_score) || 0,
+    report: isObject(value.report) ? value.report : null,
+    source: sanitizeMatchProfile(value.source),
+    partner: sanitizeMatchProfile(value.partner),
+    source_record_id: typeof value.source_record_id === 'string' ? value.source_record_id : '',
+    matched_record_id: typeof value.matched_record_id === 'string' ? value.matched_record_id : ''
+  };
+};
+
+const createAuthState = () => ({
+  user: null,
+  authToken: null,
+  records: [],
+  recordsLoaded: false,
+  recordsError: null,
+  globalStats: null,
+  userStats: null
+});
+
+const createFlowState = () => ({
+  sessionId: null,
+  view: 'landing',
+  questions: [],
+  currentQuestionIndex: 0,
+  answers: {},
+  localAnswer: null,
+  isLoading: false,
+  loadingStep: '',
+  loadingMessage: '',
+  report: null,
+  reportFolded: true,
+  scores: null,
+  types: null,
+  error: null,
+  savedRecordId: null,
+  latestMatch: null
+});
+
+export const createInitialState = () => ({
+  schemaVersion: SESSION_SCHEMA_VERSION,
+  ...createAuthState(),
+  ...createFlowState()
+});
+
 const buildQuestionResumeState = (state, message) => {
   if (!state.sessionId || state.questions.length === 0) {
     return createInitialState();
@@ -168,24 +283,6 @@ const buildQuestionResumeState = (state, message) => {
   };
 };
 
-export const createInitialState = () => ({
-  schemaVersion: SESSION_SCHEMA_VERSION,
-  sessionId: null,
-  view: 'landing',
-  questions: [],
-  currentQuestionIndex: 0,
-  answers: {},
-  localAnswer: null,
-  isLoading: false,
-  loadingStep: '',
-  loadingMessage: '',
-  report: null,
-  reportFolded: true,
-  scores: null,
-  types: null,
-  error: null
-});
-
 export const sanitizeState = (value) => {
   if (!isObject(value)) {
     return createInitialState();
@@ -194,12 +291,21 @@ export const sanitizeState = (value) => {
   const base = createInitialState();
   const questions = isCompatibleQuestionSet(value.questions) ? value.questions : base.questions;
   const answers = sanitizeAnswers(value.answers, questions);
-
   const requestedIndex = clampQuestionIndex(value.currentQuestionIndex, questions);
+
   const next = {
     ...base,
     ...value,
     schemaVersion: SESSION_SCHEMA_VERSION,
+    user: sanitizeUser(value.user),
+    authToken: typeof value.authToken === 'string' && value.authToken.trim() ? value.authToken.trim() : null,
+    records: Array.isArray(value.records)
+      ? value.records.map(sanitizeRecordSummary).filter(Boolean)
+      : [],
+    recordsLoaded: Boolean(value.recordsLoaded),
+    recordsError: typeof value.recordsError === 'string' ? value.recordsError : null,
+    globalStats: sanitizeStats(value.globalStats, ['total_tests', 'total_matches']),
+    userStats: sanitizeStats(value.userStats, ['tested_count', 'initiated_matches', 'received_matches']),
     sessionId: typeof value.sessionId === 'string' && value.sessionId.trim() ? value.sessionId.trim() : null,
     view: typeof value.view === 'string' ? value.view : base.view,
     questions,
@@ -212,12 +318,23 @@ export const sanitizeState = (value) => {
     report: isObject(value.report) ? value.report : null,
     scores: isObject(value.scores) ? value.scores : null,
     types: isObject(value.types) ? value.types : null,
-    error: typeof value.error === 'string' ? value.error : null
+    error: typeof value.error === 'string' ? value.error : null,
+    savedRecordId: typeof value.savedRecordId === 'string' && value.savedRecordId.trim() ? value.savedRecordId.trim() : null,
+    latestMatch: sanitizeMatch(value.latestMatch)
   };
 
   const currentQuestion = next.questions[next.currentQuestionIndex];
   const localAnswerSeed = requestedIndex === value.currentQuestionIndex ? value.localAnswer : null;
   next.localAnswer = sanitizeLocalAnswer(currentQuestion, localAnswerSeed, next.answers[currentQuestion?.id]);
+
+  if (!next.user || !next.authToken) {
+    next.user = null;
+    next.authToken = null;
+    next.records = [];
+    next.recordsLoaded = false;
+    next.recordsError = null;
+    next.userStats = null;
+  }
 
   if (next.view === 'landing') {
     next.isLoading = false;
@@ -227,7 +344,17 @@ export const sanitizeState = (value) => {
   }
 
   if (!next.sessionId || next.questions.length === 0) {
-    return createInitialState();
+    if (next.view === 'report' && next.report) {
+      return next;
+    }
+    return {
+      ...createInitialState(),
+      user: next.user,
+      authToken: next.authToken,
+      records: next.records,
+      recordsLoaded: next.recordsLoaded,
+      recordsError: next.recordsError
+    };
   }
 
   if (next.view === 'loading') {
@@ -279,8 +406,22 @@ export const useSessionStore = () => {
     }));
   };
 
-  const clearSession = () => {
-    setState(createInitialState());
+  const clearSession = ({ preserveAuth = true } = {}) => {
+    setState((prev) => {
+      if (!preserveAuth) {
+        return createInitialState();
+      }
+
+      return {
+        ...createInitialState(),
+        globalStats: prev.globalStats,
+        user: prev.user,
+        authToken: prev.authToken,
+        records: prev.records,
+        recordsLoaded: prev.recordsLoaded,
+        recordsError: prev.recordsError
+      };
+    });
   };
 
   return {

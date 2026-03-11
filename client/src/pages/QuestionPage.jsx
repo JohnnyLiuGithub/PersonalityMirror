@@ -1,5 +1,4 @@
-import { ArrowRight, X } from 'lucide-react';
-import { motion } from 'framer-motion';
+﻿import { ArrowRight, X } from 'lucide-react';
 
 const QuestionPage = ({
   currentQuestion,
@@ -18,11 +17,8 @@ const QuestionPage = ({
   const shortLength = typeof localAnswer === 'string' ? localAnswer.trim().length : 0;
 
   return (
-    <motion.div
+    <div
       key="question"
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -20 }}
       className="w-full max-w-2xl mx-auto space-y-8"
     >
       <div className="w-full h-1 bg-[#18181b] rounded-full overflow-hidden mb-8">
@@ -81,17 +77,16 @@ const QuestionPage = ({
         {currentQuestion.type === 'rank' && (
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#71717a] uppercase">Your Ranking (tap to remove)</label>
+              <label className="text-sm font-medium text-[#71717a] uppercase">你的排序（点击可移除）</label>
               <div
                 className={`flex flex-col gap-2 min-h-[120px] p-4 bg-[#18181b]/50 rounded-xl border border-white/5 border-dashed transition-all
                 ${Array.isArray(localAnswer) && localAnswer.length > 0 ? 'border-[#a855f7]/30 bg-[#a855f7]/5' : ''}`}
               >
                 {(!Array.isArray(localAnswer) || localAnswer.length === 0) && (
-                  <div className="text-center text-[#71717a]/50 py-8 text-sm italic">Pick items below in order</div>
+                  <div className="text-center text-[#71717a]/50 py-8 text-sm italic">请按优先级依次选择下方选项</div>
                 )}
                 {Array.isArray(localAnswer) && localAnswer.map((item, idx) => (
-                  <motion.button
-                    layout
+                  <button
                     key={item}
                     onClick={() => onDeselectRankItem(item)}
                     className="flex items-center p-3 bg-[#a855f7]/20 border border-[#a855f7]/30 rounded-lg text-left group hover:bg-red-500/20 hover:border-red-500/30 transition-all cursor-pointer"
@@ -101,18 +96,18 @@ const QuestionPage = ({
                     </span>
                     <span className="flex-1 font-medium">{item}</span>
                     <X className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity text-red-400" />
-                  </motion.button>
+                  </button>
                 ))}
                 {Array.isArray(localAnswer) && localAnswer.length > 0 && localAnswer.length < 4 && (
                   <div className="text-center text-[#a855f7]/80 py-2 text-sm font-bold animate-pulse">
-                    {`Still ${4 - localAnswer.length} item(s) to rank`}
+                    {`还差 ${4 - localAnswer.length} 项`}
                   </div>
                 )}
               </div>
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-[#71717a] uppercase">Available Items</label>
+              <label className="text-sm font-medium text-[#71717a] uppercase">可选项</label>
               <div className="grid grid-cols-1 gap-2">
                 {getRemainingRankItems().map((item) => (
                   <button
@@ -136,16 +131,16 @@ const QuestionPage = ({
             <textarea
               value={localAnswer || ''}
               onChange={(e) => onShortAnswerChange(e.target.value)}
-              placeholder="Write your answer here..."
+              placeholder="在这里写下你的答案..."
               className="w-full min-h-[200px] bg-[#18181b] border border-white/10 rounded-xl p-6 text-lg focus:outline-none focus:border-[#a855f7]/50 focus:ring-1 focus:ring-[#a855f7]/50 transition-all resize-none placeholder:text-[#71717a]/30 text-white"
             ></textarea>
             {currentQuestion.answer_hint && (
               <p className="text-sm text-[#a855f7]/70 text-right italic">
-                Hint: {currentQuestion.answer_hint}
+                提示：{currentQuestion.answer_hint}
               </p>
             )}
             {shortLength > 0 && shortLength < 10 && (
-              <p className="text-sm text-amber-400 text-right">Too short, at least 10 characters is recommended.</p>
+              <p className="text-sm text-amber-400 text-right">内容太短，建议至少写满 10 个字。</p>
             )}
           </div>
         )}
@@ -157,15 +152,12 @@ const QuestionPage = ({
           disabled={!isAnswerValid}
           className="flex items-center space-x-2 px-8 py-3 rounded-full bg-white text-black font-bold hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 cursor-pointer"
         >
-          <span>{currentQuestionIndex === totalQuestions - 1 ? 'Finish' : 'Next'}</span>
+          <span>{currentQuestionIndex === totalQuestions - 1 ? '完成' : '下一题'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 };
 
 export default QuestionPage;
-
-
-

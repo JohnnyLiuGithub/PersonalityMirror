@@ -160,3 +160,41 @@ export const validateReportSchema = (report) => {
     card_insight: String(report.card_insight).trim()
   };
 };
+
+export const validateMatchSchema = (value) => {
+  if (!isObject(value)) return null;
+
+  const normalizeList = (items) => {
+    if (!Array.isArray(items)) return null;
+    const cleaned = items.map((item) => String(item).trim()).filter(Boolean);
+    return cleaned.length >= 2 ? cleaned.slice(0, 2) : null;
+  };
+
+  const comfortableMoments = normalizeList(value.comfortable_moments);
+  const uncomfortableMoments = normalizeList(value.uncomfortable_moments);
+  const adviceForYou = normalizeList(value.advice_for_you);
+  const adviceForThem = normalizeList(value.advice_for_them);
+
+  if (!comfortableMoments || !uncomfortableMoments || !adviceForYou || !adviceForThem) {
+    return null;
+  }
+
+  const comfortableReason = String(value.comfortable_reason || '').trim();
+  const uncomfortableReason = String(value.uncomfortable_reason || '').trim();
+  const whatToDo = String(value.what_to_do || '').trim();
+  if (!comfortableReason || !uncomfortableReason || !whatToDo) {
+    return null;
+  }
+
+  return {
+    summary: String(value.summary || '').trim(),
+    comfortable_moments: comfortableMoments,
+    comfortable_reason: comfortableReason,
+    uncomfortable_moments: uncomfortableMoments,
+    uncomfortable_reason: uncomfortableReason,
+    what_to_do: whatToDo,
+    advice_for_you: adviceForYou,
+    advice_for_them: adviceForThem,
+    joint_advice: String(value.joint_advice || '').trim()
+  };
+};

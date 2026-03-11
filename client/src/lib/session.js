@@ -1,5 +1,6 @@
-export const SESSION_SCHEMA_VERSION = 2;
+export const SESSION_SCHEMA_VERSION = 3;
 export const SESSION_STORAGE_KEY = `pm_session_v${SESSION_SCHEMA_VERSION}`;
+export const BLUEPRINT_VERSION = 1;
 
 export const createSessionId = () => {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {

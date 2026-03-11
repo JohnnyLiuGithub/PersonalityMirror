@@ -1,32 +1,38 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export const useWaitTimer = () => {
   const [startedAt, setStartedAt] = useState(null);
-  const [waitSeconds, setWaitSeconds] = useState(0);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (!startedAt) {
-      setWaitSeconds(0);
       return undefined;
     }
 
-    const tick = () => {
-      setWaitSeconds(Math.max(0, Math.floor((Date.now() - startedAt) / 1000)));
-    };
+    const timer = setInterval(() => {
+      setTick(Date.now());
+    }, 500);
 
-    tick();
-    const timer = setInterval(tick, 500);
     return () => clearInterval(timer);
   }, [startedAt]);
 
+  const waitSeconds = useMemo(() => {
+    if (!startedAt) {
+      return 0;
+    }
+
+    return Math.max(0, Math.floor((tick - startedAt) / 1000));
+  }, [startedAt, tick]);
+
   const start = useCallback(() => {
-    setStartedAt(Date.now());
-    setWaitSeconds(0);
+    const now = Date.now();
+    setStartedAt(now);
+    setTick(now);
   }, []);
 
   const stop = useCallback(() => {
     setStartedAt(null);
-    setWaitSeconds(0);
+    setTick(0);
   }, []);
 
   return {
