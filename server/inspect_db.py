@@ -3,7 +3,29 @@ import os
 import sqlite3
 
 
-DB_PATH = os.getenv('SESSION_DB_PATH', os.path.join(os.path.dirname(__file__), 'sessions.db'))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+ENV_PATH = os.path.join(BASE_DIR, '.env')
+
+
+def load_env_file(path):
+    values = {}
+    if not os.path.exists(path):
+        return values
+    with open(path, 'r', encoding='utf-8') as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            key, value = line.split('=', 1)
+            values[key.strip()] = value.strip()
+    return values
+
+
+ENV_FILE_VALUES = load_env_file(ENV_PATH)
+DB_PATH = os.getenv(
+    'SESSION_DB_PATH',
+    ENV_FILE_VALUES.get('SESSION_DB_PATH', os.path.join(os.path.dirname(__file__), 'sessions.db')),
+)
 TABLES = [
     'sessions',
     'users',
